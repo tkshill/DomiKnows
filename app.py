@@ -6,25 +6,30 @@ Sample application to implement a version of the dominoes game in python. Also a
 machine learning, application development, version control, and PYTHON 3
 """
 
-import os
 import sys
-import doctest
 import configparser
-import logging
 import pathlib
+from collections import OrderedDict
+from random import randint
+from collections import deque
 
 config = configparser.ConfigParser()
 CONFIG_NAME = 'default_config.cfg'
 
 
 class Domino(object):
+    """
+    Object representing a single domino piece. Possesses two 'sides' for each half of the domino. Possess a side which
+    is the sum of the two sides and a type which can be either normal or double.
+    """
+
     def __init__(self, side_1, side_2, type="normal"):
         self.type = type
         self.side_1 = side_1
         self.side_2 = side_2
 
     def __str__(self):
-        return "Domino: {}, {}".format(self.side_1, self.side_2)
+        return "{} Domino: {}, {}".format(self.type, self.side_1, self.side_2)
 
     def __repr__(self):
         return self.__str__()
@@ -32,23 +37,59 @@ class Domino(object):
     def __add__(self, other):
         return self.size() + other.size()
 
+    def __call__(self, side):
+        """
+        if an instance is called with value 1, call returns the value of side 1. if called with 2, returns the value
+        of side 2.
+        """
+        if side == 1:
+            return self.side_1
+        elif side == 2:
+            return self.side_2
+
     def size(self):
+        """
+        Add both sides and return the result
+        """
         return self.side_1 + self.side_2
 
 
 class Board(object):
-    # deque?
+    """
+    Represents a game board. Each game has one. Dominoes are transferred from the players to the board.
+    """
 
     def __init__(self):
-        self.end1 = None
-        self.end2 = None
+        self._chain = deque()
+        self.ends = {'LEFT': self._chain.popleft(), 'RIGHT': self._chain.pop()}
 
     def is_empty(self):
-        if not self.end1:
+        """
+        Checks if Board has had any dominoes placed on it. If it's empty, returns True else return false.
+        :return: Boolean value
+        """
+        if not len(self._chain):
             return True
         else:
             return False
 
+    def update_board(self, domino, side, end):
+        """
+        Accepts a domino and a side to play it on. Adds domino to deque container chain and updates ends
+        """
+        chain = self._chain
+        if not len(chain):
+            chain.appendleft(domino.side_1)
+            chain.append(domino.side_2)
+            self.update_ends()
+        else:
+            pass
+
+    def update_ends(self):
+        """
+        uses a dictionary to expose the ends of the deque... necessary?
+        :return:
+        """
 
 class Player(object):
     def __init__(self, order, game):
@@ -66,13 +107,28 @@ class Player(object):
             return True
 
     def add_remaining_dominoes(self):
-        return sum((domino.size for domino in self.dominoes))
+        return sum((domino.size() for domino in self.dominoes))
 
     def make_move(self):
-        if self.board.is_empty():
+        board = self.board
+        if board.is_empty():
             d = self.dominoes.pop()
-            self.board.end1 = d.side1
-            self.board.end2 = d.side2
+            return d.sides, board.end1
+        else:
+            for domino in self.dominoes:
+                if domino.side_1 == board.ends['LEFT']:
+                    status = self.check_for_completion()
+                    return domino, 1, 'LEFT', status
+                elif domino.side_1 == board.ends['RIGHT']:
+                    status = self.check_for_completion()
+                    return domino, 1, 'RIGHT', status
+                elif domino.side_2 == board.ends['LEFT']:
+                    status = self.check_for_completion()
+                    return domino, 2, 'LEFT', status
+                elif domino.side_2 == board.ends['RIGHT']:
+                    status = self.check_for_completion()
+                    return domino, 2, 'RIGHT', status
+
 
 
 class Game(object):
@@ -85,33 +141,43 @@ class Game(object):
 
         for player in self.player_set:
             for count in range(7):
-                player.add_domino(dominoes.pop())
+                rand = randint(0, len(dominoes)-1)
+                player.add_domino(dominoes[rand])
 
     @staticmethod
     def _create_domino_set(size):
-        dominoes = set()
+        dominoes = []
         doubles = set()
         for i in range(size + 1):
             for j in range(size + 1):
                 size = i + j
                 if (i == j) and (not size in doubles):
-                    dominoes.add(Domino(i, j, "double"))
+                    dominoes.append(Domino(i, j, "double"))
                     doubles.add(size)
-                dominoes.add(Domino(i, j))
+                dominoes.append(Domino(i, j))
         return dominoes
 
-    # @staticmethod
-    # def _create_players():
-    #     player_set = set()
-    #     for order in range(1, 5):
-    #         p = Player(order)
-    #         player_set.add(p)
-    #     return player_set
+    def end_via_block(self):
+        final_score = [(player.order, player.add_remaining_dominoes()) for player in self.player_set]
+        final_score.sort()
 
     def run(self):
+        board = self.board
+        skipped = 0
         while True:
             for player in self.player_set:
-                player.play_card()
+                try:
+                    domino, side, end, win_status = player.make_move()
+                    skipped = 0
+                except TypeError:
+                    skipped +=1
+                    if skipped == 4:
+                        self.end_via_block()
+                else:
+                    board.update(domino, side, end)
+                    if win_status:
+                        print("Player {} wins!!!".format(player.order))
+                    return
 
 
 def main():
@@ -139,6 +205,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         sys.exit(-1)
     except SystemError:
-        pass
+        raise
     except:
-        pass
+        raise
