@@ -9,12 +9,25 @@ machine learning, application development, version control, and PYTHON 3
 import sys
 import configparser
 import pathlib
-from collections import OrderedDict
 from random import randint
 from collections import deque
 
 config = configparser.ConfigParser()
 CONFIG_NAME = 'default_config.cfg'
+
+# TODO remove the ends attribute in boards and just reference the ends of the deques
+# TODO add logic for how to determine move when not playing first
+# TODO write doctests/unittests for all available methods
+# TODO subclass player to make human player
+# TODO add command line arguments so game can be started with 4 comp players or 3 comp one human player
+# TODO GUI/NO GUI? Kivy or tkinter
+# TODO Machine learnin'
+
+class CannotPlay(Exception):
+    """
+    Custom Exception Cannot Play when the player's dominoes match up to no dominoes on the board
+    """
+    pass
 
 
 class Domino(object):
@@ -40,7 +53,7 @@ class Domino(object):
     def __call__(self, side):
         """
         if an instance is called with value 1, call returns the value of side 1. if called with 2, returns the value
-        of side 2.
+        of side 2. Mainly to expedite checking whether a domino matches ends without having to refer to side1 and side2.
         """
         if side == 1:
             return self.side_1
@@ -56,9 +69,9 @@ class Domino(object):
 
 class Board(object):
     """
-    Represents a game board. Each game has one. Dominoes are transferred from the players to the board.
+    Represents a game board. Each game has one. Players can inspect tiles on board. Dominoes are transferred from the
+    players to the board.
     """
-
     def __init__(self):
         self._chain = deque()
         self.ends = {'LEFT': self._chain.popleft(), 'RIGHT': self._chain.pop()}
@@ -92,24 +105,45 @@ class Board(object):
         """
 
 class Player(object):
+    """
+    Player represents exactly what you think. Each player has a set of dominoes, a game which they are a part of
+    (and thus access to viewing the game's board). Players can make moves and (eventually) analyze the board to make the
+    best moves.
+    """
     def __init__(self, order, game):
         self.board = game.board
         self.order = order
         self.dominoes = set()
 
     def add_domino(self, domino):
+        """
+        Adds a single domino to the set of dominoes.
+        """
         self.dominoes.add(domino)
 
     def check_for_completion(self):
+        """
+        Checks if player has played all the dominoes given at the start of the game/Checks if their dominoes_set is
+        empty. Returns True or False
+        """
         if self.dominoes:
             return False
         else:
             return True
 
     def add_remaining_dominoes(self):
+        """
+        Returns the sum of the remaining dominoes in the player's hand. Used when the game ends due to a blocked board.
+        """
         return sum((domino.size() for domino in self.dominoes))
 
     def make_move(self):
+        """
+        Logic for making a move on the board. The current dummy logic simply select the first domino in the set that
+        can be played on the current board configuration.
+        Returns a tuple of the domino used, the side of the domino that matches, the side of the board to play it on,
+         and the players completion status.
+        """
         board = self.board
         if board.is_empty():
             d = self.dominoes.pop()
@@ -128,21 +162,22 @@ class Player(object):
                 elif domino.side_2 == board.ends['RIGHT']:
                     status = self.check_for_completion()
                     return domino, 2, 'RIGHT', status
-
+                else:
+                    raise CannotPlay
 
 
 class Game(object):
 
     def __init__(self, size):
         self.board = Board()
-        self.player_set = [Player(order, self) for order in range(4)]
+        self.player_set = [Player(order, self) for order in range(1, 5)]
 
         dominoes = self._create_domino_set(size)
 
         for player in self.player_set:
             for count in range(7):
                 rand = randint(0, len(dominoes)-1)
-                player.add_domino(dominoes[rand])
+                player.add_domino(dominoes.pop(rand))
 
     @staticmethod
     def _create_domino_set(size):
@@ -158,26 +193,33 @@ class Game(object):
         return dominoes
 
     def end_via_block(self):
-        final_score = [(player.order, player.add_remaining_dominoes()) for player in self.player_set]
-        final_score.sort()
+        final_score = [(player, player.add_remaining_dominoes()) for player in self.player_set]
+        final_score.sort(key=lambda x: x[1])
+        print("Player {} has won with {} points remaining!".format(final_score[-1][0].order, final_score[-1][1]))
+
+    def end_via_completion(self, player):
+        print("Player {} has used all their dominoes! They are the winner!".format(player.order))
 
     def run(self):
         board = self.board
         skipped = 0
-        while True:
+        running = True
+        while running:
             for player in self.player_set:
                 try:
                     domino, side, end, win_status = player.make_move()
                     skipped = 0
-                except TypeError:
+                except CannotPlay:
                     skipped +=1
                     if skipped == 4:
                         self.end_via_block()
+                        running = False
                 else:
-                    board.update(domino, side, end)
+                    board.update_board(domino, side, end)
                     if win_status:
-                        print("Player {} wins!!!".format(player.order))
-                    return
+                        self.end_via_completion(player)
+                        running = False
+
 
 
 def main():

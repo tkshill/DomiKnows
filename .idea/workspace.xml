@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4a1a7883-84e7-4ca3-95bd-c7d1cd66ecbf" name="Default" comment="added new file with basic objects to repo. Defined domino class, player, and game. tried and failed to automate config creation">
+    <list default="true" id="4a1a7883-84e7-4ca3-95bd-c7d1cd66ecbf" name="Default" comment="added board class. Obvious initialization complete.">
       <change type="MODIFICATION" beforePath="$USER_HOME$/Google Drive/Software Development/DomiKnows/app.py" afterPath="$USER_HOME$/Google Drive/Software Development/DomiKnows/app.py" />
       <change type="MODIFICATION" beforePath="$USER_HOME$/Google Drive/Software Development/DomiKnows/.idea/workspace.xml" afterPath="$USER_HOME$/Google Drive/Software Development/DomiKnows/.idea/workspace.xml" />
     </list>
     <ignored path="DominKnows.iws" />
     <ignored path=".idea/workspace.xml" />
+    <ignored path="$USER_HOME$/Google Drive/Software Development/DomiKnows/.idea/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,10 +28,10 @@
       <file leaf-file-name="app.py" pinned="false" current-in-tab="true">
         <entry file="file://$USER_HOME$/Google Drive/Software Development/DomiKnows/app.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.1037567">
-              <caret line="135" column="0" selection-start-line="135" selection-start-column="0" selection-end-line="135" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.84358525">
+              <caret line="24" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
               <folding>
-                <element signature="e#237#246#0" expanded="true" />
+                <element signature="e#237#247#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -60,10 +61,10 @@
     <order />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="943" />
-    <option name="y" value="31" />
-    <option name="width" value="976" />
-    <option name="height" value="1038" />
+    <option name="x" value="-9" />
+    <option name="y" value="-9" />
+    <option name="width" value="1938" />
+    <option name="height" value="1048" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -107,8 +108,10 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$USER_HOME$/Google Drive/Software Development/DomiKnows" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Google Drive/Software Development/DomiKnows/.idea" />
     <property name="recentsLimit" value="5" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Font" />
+    <property name="settings.editor.splitter.proportion" value="0.2" />
   </component>
   <component name="RunManager" selected="Python.app">
     <configuration default="false" name="app" type="PythonConfigurationType" factoryName="Python" temporary="true">
@@ -276,7 +279,19 @@
       <option name="project" value="LOCAL" />
       <updated>1474847504636</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="added board class. Obvious initialization complete.">
+      <created>1474857331003</created>
+      <option name="number" value="00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1474857331003</updated>
+    </task>
+    <task id="LOCAL-00003" summary="updated logic for running single game. Should be last commit before syncing with remote repo">
+      <created>1475027667167</created>
+      <option name="number" value="00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1475027667167</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TodoView">
@@ -289,22 +304,22 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="943" y="31" width="976" height="1038" extended-state="0" />
-    <editor active="false" />
+    <frame x="-9" y="-9" width="1938" height="1048" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32962137" sideWeight="0.49815303" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32962137" sideWeight="0.5039578" order="-1" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32962137" sideWeight="0.49815303" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.33333334" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32995495" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32962137" sideWeight="0.49604222" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19721329" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33296213" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32962137" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32962137" sideWeight="0.49604222" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.09709763" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.18435155" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39977476" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3986637" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -327,14 +342,16 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
     <MESSAGE value="added new file with basic objects to repo. Defined domino class, player, and game. tried and failed to automate config creation" />
-    <option name="LAST_COMMIT_MESSAGE" value="added new file with basic objects to repo. Defined domino class, player, and game. tried and failed to automate config creation" />
+    <MESSAGE value="added board class. Obvious initialization complete." />
+    <MESSAGE value="updated logic for running single game. Should be last commit before syncing with remote repo" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated logic for running single game. Should be last commit before syncing with remote repo" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$USER_HOME$/Google Drive/Software Development/DomiKnows/app.py</url>
-          <line>132</line>
+          <line>240</line>
         </line-breakpoint>
       </breakpoints>
       <option name="time" value="1" />
@@ -352,10 +369,10 @@
     </entry>
     <entry file="file://$USER_HOME$/Google Drive/Software Development/DomiKnows/app.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.1037567">
-          <caret line="135" column="0" selection-start-line="135" selection-start-column="0" selection-end-line="135" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.84358525">
+          <caret line="24" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
           <folding>
-            <element signature="e#237#246#0" expanded="true" />
+            <element signature="e#237#247#0" expanded="true" />
           </folding>
         </state>
       </provider>
