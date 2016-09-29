@@ -9,46 +9,48 @@ machine learning, application development, version control, and PYTHON 3
 import sys
 import configparser
 import pathlib
+import logging
 from random import randint
 from collections import deque
+import traceback
 
-config = configparser.ConfigParser()
-CONFIG_NAME = 'default_config.cfg'
-
-# TODO remove the ends attribute in boards and just reference the ends of the deques
-# TODO add logic for how to determine move when not playing first
 # TODO write doctests/unittests for all available methods
 # TODO subclass player to make human player
 # TODO add command line arguments so game can be started with 4 comp players or 3 comp one human player
 # TODO GUI/NO GUI? Kivy or tkinter
 # TODO Machine learnin'
 
+config = configparser.ConfigParser()
+CONFIG_NAME = 'default_config.cfg'
+LOGGING_FILE = 'domi_knows.log'
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename=LOGGING_FILE, level=logging.DEBUG)
+
 class CannotPlay(Exception):
     """
     Custom Exception Cannot Play when the player's dominoes match up to no dominoes on the board
     """
-    pass
+    def __init__(self, message, errors):
+        super(CannotPlay, self).__init__(message)
+        self.errors = errors
 
 
 class Domino(object):
     """
-    Object representing a single domino piece. Possesses two 'sides' for each half of the domino. Possess a side which
+    Object representing a single domino piece. Possesses two 'sides' for each half of the domino. Possess a size which
     is the sum of the two sides and a type which can be either normal or double.
     """
 
-    def __init__(self, side_1, side_2, type="normal"):
-        self.type = type
+    def __init__(self, side_1, side_2):
         self.side_1 = side_1
         self.side_2 = side_2
 
     def __str__(self):
-        return "{} Domino: {}, {}".format(self.type, self.side_1, self.side_2)
+        return "Domino: {}, {}".format(self.side_1, self.side_2)
 
     def __repr__(self):
         return self.__str__()
-
-    def __add__(self, other):
-        return self.size() + other.size()
 
     def __call__(self, side):
         """
@@ -74,7 +76,7 @@ class Board(object):
     """
     def __init__(self):
         self._chain = deque()
-        self.ends = {'LEFT': self._chain.popleft(), 'RIGHT': self._chain.pop()}
+
 
     def is_empty(self):
         """
@@ -91,18 +93,27 @@ class Board(object):
         Accepts a domino and a side to play it on. Adds domino to deque container chain and updates ends
         """
         chain = self._chain
-        if not len(chain):
-            chain.appendleft(domino.side_1)
-            chain.append(domino.side_2)
-            self.update_ends()
-        else:
-            pass
+        if end == 'left':
+            if side == 1:
+                chain.appendleft(domino.side_1)
+                chain.appendleft(domino.side_2)
+            elif side == 2:
+                chain.appendleft(domino.side_2)
+                chain.appendleft(domino.side_1)
+        elif end == 'right':
+            if side == 1:
+                chain.append(domino.side_1)
+                chain.append(domino.side_2)
+            elif side == 2:
+                chain.append(domino.side_2)
+                chain.append(domino.side_1)
 
-    def update_ends(self):
-        """
-        uses a dictionary to expose the ends of the deque... necessary?
-        :return:
-        """
+    def __call__(self, end):
+        if end == 'left':
+            return self._chain.popleft()
+        elif end == 'right':
+            return self._chain.pop()
+
 
 class Player(object):
     """
@@ -146,24 +157,25 @@ class Player(object):
         """
         board = self.board
         if board.is_empty():
-            d = self.dominoes.pop()
-            return d.sides, board.end1
+            domino = self.dominoes.pop()
+            response = (domino, 1, 'left')
         else:
             for domino in self.dominoes:
-                if domino.side_1 == board.ends['LEFT']:
-                    status = self.check_for_completion()
-                    return domino, 1, 'LEFT', status
-                elif domino.side_1 == board.ends['RIGHT']:
-                    status = self.check_for_completion()
-                    return domino, 1, 'RIGHT', status
-                elif domino.side_2 == board.ends['LEFT']:
-                    status = self.check_for_completion()
-                    return domino, 2, 'LEFT', status
-                elif domino.side_2 == board.ends['RIGHT']:
-                    status = self.check_for_completion()
-                    return domino, 2, 'RIGHT', status
-                else:
-                    raise CannotPlay
+                if domino(1) == board('left'):
+                    response = (domino, 1, 'left')
+                    break
+                elif domino(1) == board('right'):
+                    response = (domino, 1, 'right')
+                    break
+                elif domino(2) == board('left'):
+                    response = (domino, 2, 'left')
+                    break
+                elif domino(2) == board('right'):
+                    response = (domino, 2, 'right')
+                    break
+            else:
+                raise CannotPlay
+        return response
 
 
 class Game(object):
@@ -187,7 +199,7 @@ class Game(object):
             for j in range(size + 1):
                 size = i + j
                 if (i == j) and (not size in doubles):
-                    dominoes.append(Domino(i, j, "double"))
+                    dominoes.append(Domino(i, j))
                     doubles.add(size)
                 dominoes.append(Domino(i, j))
         return dominoes
@@ -207,19 +219,20 @@ class Game(object):
         while running:
             for player in self.player_set:
                 try:
-                    domino, side, end, win_status = player.make_move()
-                    skipped = 0
+                    domino, side, end = player.make_move()
                 except CannotPlay:
                     skipped +=1
                     if skipped == 4:
                         self.end_via_block()
                         running = False
+                        break
                 else:
+                    skipped = 0
                     board.update_board(domino, side, end)
-                    if win_status:
+                    if player.check_for_completion():
                         self.end_via_completion(player)
                         running = False
-
+                        break
 
 
 def main():
@@ -245,8 +258,17 @@ if __name__ == "__main__":
     try:
         attempt = main()
     except KeyboardInterrupt:
-        sys.exit(-1)
+        sys.exit(1)
     except SystemError:
         raise
     except:
-        raise
+        exc_info = sys.exc_info()
+        exc_class, exc, tb = exc_info
+        tb_path, tb_line_no, tb_func = traceback.extract_tb(tb)[-1][:3]
+        logger.error(
+            "{} ({}:{} in {}".format(
+                exc_info[1], tb_path, tb_line_no, tb_func
+            )
+        )
+    else:
+        sys.exit(attempt)

@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="4a1a7883-84e7-4ca3-95bd-c7d1cd66ecbf" name="Default" comment="added board class. Obvious initialization complete.">
       <change type="MODIFICATION" beforePath="$USER_HOME$/Google Drive/Software Development/DomiKnows/app.py" afterPath="$USER_HOME$/Google Drive/Software Development/DomiKnows/app.py" />
-      <change type="MODIFICATION" beforePath="$USER_HOME$/Google Drive/Software Development/DomiKnows/.idea/workspace.xml" afterPath="$USER_HOME$/Google Drive/Software Development/DomiKnows/.idea/workspace.xml" />
     </list>
     <ignored path="DominKnows.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -28,8 +27,8 @@
       <file leaf-file-name="app.py" pinned="false" current-in-tab="true">
         <entry file="file://$USER_HOME$/Google Drive/Software Development/DomiKnows/app.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.84358525">
-              <caret line="24" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.52724075">
+              <caret line="15" column="0" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
               <folding>
                 <element signature="e#237#247#0" expanded="true" />
               </folding>
@@ -351,7 +350,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$USER_HOME$/Google Drive/Software Development/DomiKnows/app.py</url>
-          <line>240</line>
+          <line>253</line>
         </line-breakpoint>
       </breakpoints>
       <option name="time" value="1" />
@@ -369,8 +368,8 @@
     </entry>
     <entry file="file://$USER_HOME$/Google Drive/Software Development/DomiKnows/app.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.84358525">
-          <caret line="24" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.52724075">
+          <caret line="15" column="0" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
           <folding>
             <element signature="e#237#247#0" expanded="true" />
           </folding>
