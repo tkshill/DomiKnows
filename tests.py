@@ -4,51 +4,6 @@ import app
 import unittest
 from unittest import mock
 
-class TestDominoDominoes(unittest.TestCase):
-
-    def setUp(self):
-        self.domino = app.Domino(3, 4)
-
-    def test_domino_returns_correct_size(self):
-        self.assertEqual(7, self.domino.size())
-
-    def test_sides_return_correct_value(self):
-        self.assertEqual((3, 4), (self.domino.side_1, self.domino.side_2))
-
-    def test_domino_string(self):
-        self.assertEqual(self.domino.__str__(), self.domino.__repr__())
-
-    def test_domino_call_returns_sides(self):
-        self.assertEqual(4, self.domino(2))
-        self.assertRaises(app.DominoArgValueError, self.domino, 'f')
-
-
-class TestBoardMethods(unittest.TestCase):
-
-    def setUp(self):
-        self.b = app.Board()
-        self.b2 = app.Board()
-        self.d = app.Domino(4,6)
-        self.d2 = app.Domino(6,0)
-
-    def test_empty_board_verify(self):
-        self.assertEqual(self.b.is_empty(), True)
-
-    def test_call_method(self):
-        self.assertRaises(IndexError, self.b2, 'left')
-        self.b2.update_board(self.d, 2, 'right')
-        self.assertEqual(self.b2('left'), 6)
-
-    def test_call_with_bad_args(self):
-        self.assertRaises(app.BoardArgValueError, self.b2.__call__, 'top')
-
-    def test_add_domino_to_board(self):
-        self.b.update_board(self.d, 1, 'right')
-        self.assertEqual(self.b('left'), 4)
-
-        self.b.update_board(self.d2, 1, 'right')
-        self.assertEqual(self.b('right'), 0)
-
 
 class TestPlayerMethods(unittest.TestCase):
 

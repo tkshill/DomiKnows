@@ -44,115 +44,13 @@ class CannotPlay(MyException):
     pass
 
 
-class DominoArgValueError(MyException):
-    """
-    Raise when domino is called with incorrect args
-    """
-    pass
-
-
-class BoardArgValueError(MyException):
-    pass
-
-
-class Domino(object):
-    """
-    Object representing a single domino piece. Possesses two 'sides' for each half of the domino. Possess a size which
-    is the sum of the two sides and a type which can be either normal or double.
-    """
-
-    def __init__(self, side_1, side_2):
-        self.side_1 = side_1
-        self.side_2 = side_2
-
-    def __str__(self):
-        return "Domino: {}, {}".format(self.side_1, self.side_2)
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __call__(self, side):
-        """
-        if an instance is called with value 1, call returns the value of side 1. if called with 2, returns the value
-        of side 2. Mainly to expedite checking whether a domino matches ends without having to refer to side1 and side2.
-        """
-        if side == 1:
-            return self.side_1
-        elif side == 2:
-            return self.side_2
-        else:
-            raise DominoArgValueError('Domino call arguments can either be 1 or 2')
-
-    def size(self):
-        """
-        Add both sides and return the result
-        """
-        return self.side_1 + self.side_2
-
-
-class Board(object):
-    """
-    Represents a game board. Each game has one. Players can inspect tiles on board. Dominoes are transferred from the
-    players to the board.
-    """
-    def __init__(self):
-        self._chain = deque()
-
-    def is_empty(self):
-        """
-        Checks if Board has had any dominoes placed on it. If it's empty, returns True else return false.
-        :return: Boolean value
-        """
-        if not len(self._chain):
-            return True
-        else:
-            return False
-
-    def update_board(self, domino, d_side, b_end):
-        """
-        Accepts a domino and a side to play it on. Adds domino to deque container chain and updates ends
-        """
-        chain = self._chain
-        if d_side == 1:
-            if b_end == "left":
-                chain.appendleft(domino.side_1)
-                chain.appendleft(domino.side_2)
-            elif b_end == "right":
-                chain.append(domino.side_1)
-                chain.append(domino.side_2)
-        elif d_side == 2:
-            if b_end == "left":
-                chain.appendleft(domino.side_2)
-                chain.appendleft(domino.side_1)
-            elif b_end == "right":
-                chain.append(domino.side_2)
-                chain.append(domino.side_1)
-
-        print("Board status: {}".format(chain))
-
-
-    def __call__(self, end):
-        """
-        Insert 'left' or 'right' to get one end of the chain or another.
-        """
-        if end == 'left':
-            return self._chain[0]
-        elif end == 'right':
-            return self._chain[-1]
-        else:
-            raise BoardArgValueError(
-                'incorrect argument to Board, use either "left" or "right".'
-            )
-
-
 class Player(object):
     """
     Player represents exactly what you think. Each player has a set of dominoes, a game which they are a part of
     (and thus access to viewing the game's board). Players can make moves and (eventually) analyze the board to make the
     best moves.
     """
-    def __init__(self, order, board):
-        self.board = board
+    def __init__(self, order):
         self.order = order
         self.dominoes = set()
 
@@ -176,38 +74,47 @@ class Player(object):
         """
         Returns the sum of the remaining dominoes in the player's hand. Used when the game ends due to a blocked board.
         """
-        return sum((domino.size() for domino in self.dominoes))
+        return sum([d[0] + d[1] for d in self.dominoes])
 
-    def make_move(self):
+    def decide_move(self, board):
         """
         Logic for making a move on the board. The current dummy logic simply select the first domino in the set that
         can be played on the current board configuration.
         Returns a tuple of the domino used, the side of the domino that matches, the side of the board to play it on,
          and the players completion status.
         """
-        board = self.board
-        if board.is_empty():
+        if not board:
             domino = self.dominoes.pop()
-            return (domino, 1, 'left')
+            return self._move('appendleft', domino[0], domino[1])
+
         else:
             for domino in self.dominoes:
-                if domino(1) == board('left'):
-                    response = (domino, 1, 'left')
-                    break
-                elif domino(1) == board('right'):
-                    response = (domino, 1, 'right')
-                    break
-                elif domino(2) == board('left'):
-                    response = (domino, 2, 'left')
-                    break
-                elif domino(2) == board('right'):
-                    response = (domino, 2, 'right')
-                    break
+
+                if domino[0] == board[0][0]:
+                    self.dominoes.remove(domino)
+                    return self._move('appendleft', domino[1], domino[0])
+
+                elif domino[0] == board[-1][-1]:
+                    self.dominoes.remove(domino)
+                    return self._move('append', domino[0], domino[1])
+
+                elif domino[1] == board[0][0]:
+                    self.dominoes.remove(domino)
+                    return self._move('appendleft', domino[0], domino[1])
+
+                elif domino[1] == board[-1][-1]:
+                    self.dominoes.remove(domino)
+                    return self._move('append', domino[1], domino[0])
+
             else:
                 raise CannotPlay
 
-            self.dominoes.remove(response[0])
-            return response
+    def _move(self, method, val_1, val_2):
+        def call_board_action(container):
+            action = getattr(container, method)
+            action((val_1, val_2))
+
+        return call_board_action
 
 
 class Game(object):
@@ -215,6 +122,7 @@ class Game(object):
     def __init__(self, size, board, players):
         self.board = board
         self.player_set = players
+
         dominoes = self._create_domino_set(size)
 
         for player in self.player_set:
@@ -229,13 +137,13 @@ class Game(object):
         dominoes = []
         for i in range(size + 1):
             for j in range(i, size + 1):
-                dominoes.append(Domino(i, j))
+                dominoes.append((i, j))
         return dominoes
 
     def _end_via_block(self):
-        final_score = [(player, player.add_remaining_dominoes()) for player in self.player_set]
-        final_score.sort(key=lambda x: x[1])
-        print("Player {} has won with {} points remaining!".format(final_score[-1][0].order, final_score[-1][1]))
+        final_result = [(player, player.add_remaining_dominoes()) for player in self.player_set]
+        final_result.sort(key=lambda x: x[1])
+        print("Player {} has won with {} points remaining!".format(final_result[-1][0].order, final_result[-1][1]))
 
     def _end_via_completion(self, player):
         print("Player {} has used all their dominoes! They are the winner!".format(player.order))
@@ -246,8 +154,9 @@ class Game(object):
         running = True
         while running:
             for player in self.player_set:
+                print(board)
                 try:
-                    domino, side, end = player.make_move()
+                    decision = player.decide_move(board)
                 except CannotPlay:
                     print("Player {} skips their turn.".format(player.order))
                     skipped +=1
@@ -256,10 +165,10 @@ class Game(object):
                         running = False
                         break
                 else:
-                    print("Player {} plays {}".format(player.order, domino))
-                    time.sleep(2)
+                    time.sleep(1)
+                    print("Player {} makes a move!".format(player.order))
                     skipped = 0
-                    board.update_board(domino, side, end)
+                    decision(board)
                     if player.check_for_completion():
                         self._end_via_completion(player)
                         running = False
@@ -268,9 +177,8 @@ class Game(object):
 
 def run():
     max_size = 6  # config['DEFAULT_SIZE']
-
-    board = Board()
-    players = [Player(i, board) for i in range(1, 5)]
+    board = deque()
+    players = [Player(i) for i in range(1, 5)]
     game = Game(max_size, board, players)
     game.run()
 
