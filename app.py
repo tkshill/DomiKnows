@@ -28,12 +28,16 @@ from collections import defaultdict
 config = configparser.ConfigParser()
 CONFIG_NAME = 'default_config.cfg'
 LOGGING_FILE = 'domi_knows.log'
+DEBUG_MODE = True
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename=LOGGING_FILE, level=logging.DEBUG)
 
 
 class MyException(Exception):
+    """
+    Base class for custom exceptions.
+    """
     pass
 
 
@@ -56,7 +60,7 @@ class Player(object):
 
     def add_domino(self, domino):
         """
-        Adds a single domino to the set of dominoes.
+        Adds a single domino tuple to the set of dominoes.
         """
         self.dominoes.add(domino)
 
@@ -83,11 +87,17 @@ class Player(object):
         Returns a tuple of the domino used, the side of the domino that matches, the side of the board to play it on,
          and the players completion status.
         """
+
+        # if board has no dominoes yet
         if not board:
             domino = self.dominoes.pop()
+
+            # nothing special about this particular configuration.
             return self._move('appendleft', domino[0], domino[1])
 
         else:
+
+            # iterate through each domino in hand, checking for a match with a side of the board.
             for domino in self.dominoes:
 
                 if domino[0] == board[0][0]:
@@ -107,9 +117,28 @@ class Player(object):
                     return self._move('append', domino[1], domino[0])
 
             else:
+                # if the player goes through all their dominoes without finding a match with the board, raise error
                 raise CannotPlay
 
     def _move(self, method, val_1, val_2):
+        """
+        Accepts a string representing the deque methods 'append' or 'appendleft'
+        and the two sides of the domino to be placed on the board.
+
+        Uses a closure to Return a Function that will accept a deque (board), bind
+        the appropriate board
+        method to a name, and call that method with a tuple representing the domino to be played.
+
+        e.g.
+        >>> p = Player(1)
+        >>> decision = p._move('append', 4, 5)
+        >>> b = deque()
+        >>> b
+        deque([])
+        >>> decision(b)
+        >>>b
+        deque([(4, 5)])
+        """
         def call_board_action(container):
             action = getattr(container, method)
             action((val_1, val_2))
@@ -118,9 +147,12 @@ class Player(object):
 
 
 class Game(object):
+    """
+    Object representing the data and logic necessary to play a single game of dominoes.
+    """
 
     def __init__(self, size, board, players):
-        self.board = board
+        self.board = board  # deque which dominoes will be played on
         self.player_set = players
 
         dominoes = self._create_domino_set(size)
@@ -134,6 +166,11 @@ class Game(object):
             )
 
     def _create_domino_set(self, size):
+        """
+        Accepts an integer for the highest number to be printed on a domino.
+        Returns a set of dominoes of size ( (n**2 + 3n)/2 ) + 1 where n is the size passed in. Each domino is
+        a tuple containing two values each where 0 <= value <= size.
+        """
         dominoes = []
         for i in range(size + 1):
             for j in range(i, size + 1):
@@ -141,34 +178,63 @@ class Game(object):
         return dominoes
 
     def _end_via_block(self):
-        final_result = [(player, player.add_remaining_dominoes()) for player in self.player_set]
+        """
+        Prints the player with the lowest valued set of dominoes in the case that no one can play.
+        """
+
+        # create a list of each player's number and the sum of their remaining dominoes.
+        final_result = [(player.order, player.add_remaining_dominoes()) for player in self.player_set]
+
+        # sort via the sum in ascending order
         final_result.sort(key=lambda x: x[1])
-        print("Player {} has won with {} points remaining!".format(final_result[-1][0].order, final_result[-1][1]))
+        print(final_result)
+
+        print("Player {} has won with {} points remaining!".format(final_result[-1][0], final_result[-1][1]))
 
     def _end_via_completion(self, player):
+        """
+        Accepts the player who finished their hand first and prints their success.
+        """
         print("Player {} has used all their dominoes! They are the winner!".format(player.order))
 
     def run(self):
+        """
+        Driving logic for a single game. A loop drives each player to make a move based on the board,
+        and updates that board based on the players' moves.
+        """
         board = self.board
         skipped = 0
         running = True
+
         while running:
             for player in self.player_set:
                 print(board)
                 try:
+                    # attempt to get a valid move from the player
                     decision = player.decide_move(board)
                 except CannotPlay:
+                    # players raise an error if they cannot make a move.
                     print("Player {} skips their turn.".format(player.order))
+
                     skipped +=1
+
+                    # if skipped counter hits four then that means every player has skipped a turn in sequence.
+                    # so no one can play on the board.
                     if skipped == 4:
                         self._end_via_block()
+
+                        # escape the for loop and halt the while loop. halt the for and escape the while?
                         running = False
                         break
                 else:
-                    time.sleep(1)
+                    time.sleep(3)  # for the purpose of observing the function running
                     print("Player {} makes a move!".format(player.order))
-                    skipped = 0
+                    skipped = 0  # reset the skipped turn counter
+
+                    # apply the player's decision to the board
                     decision(board)
+
+                    # if the player has no more dominoes left...
                     if player.check_for_completion():
                         self._end_via_completion(player)
                         running = False
@@ -177,9 +243,9 @@ class Game(object):
 
 def run():
     max_size = 6  # config['DEFAULT_SIZE']
-    board = deque()
-    players = [Player(i) for i in range(1, 5)]
-    game = Game(max_size, board, players)
+    board = deque()  # game 'board'
+    players = [Player(i) for i in range(1, 5)]  # create four players
+    game = Game(max_size, board, players)  # initialize a game instance
     game.run()
 
 
@@ -198,25 +264,29 @@ if __name__ == "__main__":
         pass
 
     try:
+        # attempt normal execution
         attempt = run()
+
+    # allow keyboard interrupts
     except KeyboardInterrupt:
         sys.exit(1)
+
+    # do not log system level errors
     except SystemError:
         raise
     except:
-        exc_info = sys.exc_info()
-        exc_class, exc, tb = exc_info
-        tb_path, tb_line_no, tb_func = traceback.extract_tb(tb)[-1][:3]
-        raise
-        # print(
-        #     "{} ({}:{} in {}".format(
-        #         exc_info[1], tb_path, tb_line_no, tb_func
-        #     )
-        # )
-        # logger.error(
-        #     "{} ({}:{} in {}".format(
-        #         exc_info[1], tb_path, tb_line_no, tb_func
-        #     )
-        # )
+        # log or print errors depending on development or not
+        if DEBUG_MODE:
+            raise
+        else:
+            exc_info = sys.exc_info()
+            exc_class, exc, tb = exc_info
+            tb_path, tb_line_no, tb_func = traceback.extract_tb(tb)[-1][:3]
+
+            logger.error(
+                "{} ({}:{} in {}".format(
+                    exc_info[1], tb_path, tb_line_no, tb_func
+                )
+            )
     else:
         sys.exit(attempt)
