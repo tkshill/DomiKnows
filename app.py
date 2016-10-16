@@ -13,17 +13,7 @@ import logging
 from random import randint
 from collections import deque
 import traceback
-import unittest
-from unittest import mock
 import time
-from collections import defaultdict
-
-# TODO write doctests/unittests for all available methods
-# TODO subclass player to make human player
-# TODO Move players initialization outside of game so same players can play multiple games...
-# TODO add command line arguments so game can be started with 4 comp players or 3 comp one human player
-# TODO GUI/NO GUI? Kivy or tkinter
-# TODO Machine learnin'
 
 config = configparser.ConfigParser()
 CONFIG_NAME = 'default_config.cfg'
@@ -154,10 +144,14 @@ class Game(object):
     def __init__(self, size, board, players):
         self.board = board  # deque which dominoes will be played on
         self.player_set = players
-
         dominoes = self._create_domino_set(size)
+        self._assign_dominoes(dominoes, self.player_set)
 
-        for player in self.player_set:
+    def _assign_dominoes(self, dominoes, players):
+        """
+        Accepts a set of dominoes and a list of players. Places a random domino in the set to players in sequence.
+        """
+        for player in players:
             for count in range(7):
                 rand = randint(0, len(dominoes)-1)
                 player.add_domino(dominoes.pop(rand))
@@ -219,7 +213,7 @@ class Game(object):
                     skipped +=1
 
                     # if skipped counter hits four then that means every player has skipped a turn in sequence.
-                    # so no one can play on the board.
+                    # so the board is blocked on both ends.
                     if skipped == 4:
                         self._end_via_block()
 
@@ -289,4 +283,5 @@ if __name__ == "__main__":
                 )
             )
     else:
+        # graceful exit...
         sys.exit(attempt)
