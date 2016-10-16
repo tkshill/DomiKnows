@@ -2,7 +2,6 @@ __author__ = 'Kirk'
 
 import app
 import unittest
-from unittest import mock
 
 
 class TestPlayerMethods(unittest.TestCase):
@@ -13,7 +12,7 @@ class TestPlayerMethods(unittest.TestCase):
 
     def test_add_domino(self):
         p = self.player
-        d = (4,7)
+        d = (4, 7)
         p.add_domino(d)
         self.assertIn(d, p.dominoes)
 
@@ -34,7 +33,7 @@ class TestPlayerMethods(unittest.TestCase):
 
     def test_make_move(self):
         board = self.board
-        d = (4,5)
+        d = (4, 5)
         board.append(d)
 
         d2 = (3, 4)
@@ -45,11 +44,11 @@ class TestPlayerMethods(unittest.TestCase):
         decision = self.player.decide_move(board)
         decision(board)
 
-        self.assertEqual(board, app.deque(((3,4), (4, 5))))
+        self.assertEqual(board, app.deque(((3, 4), (4, 5))))
 
     def test_make_move_raises_error_if_no_match(self):
         board = self.board
-        d = (4,5)
+        d = (4, 5)
         board.append(d)
 
         d2 = (0, 2)
@@ -60,29 +59,50 @@ class TestPlayerMethods(unittest.TestCase):
         self.assertRaises(app.CannotPlay, self.player.decide_move, board)
 
 
-class TestGame(unittest.TestCase):
+class TestSupportFunctions(unittest.TestCase):
 
     def setUp(self):
+        pass
 
-        size = 6
-        self.g = app.Game(size)
+    def test_create_dominoes(self):
+        dominoes = app.create_domino_set(6)
+        self.assertEqual(len(dominoes), 28)
+
+        dominoes2 = app.create_domino_set(7)
+        self.assertEqual(len(dominoes2), 36)
+
+        dominoes3 = app.create_domino_set(0)
+        self.assertEqual(len(dominoes3), 1)
+
+    def test_domino_assignment(self):
+
+        dominoes = app.create_domino_set(6)
+        players = app.make_players(4)
+
+        dominoes2 = app.create_domino_set(7)
+        players2 = app.make_players(6)
+
+        app.assign_dominoes(dominoes, players)
+        self.assertEqual(7, len(players[1].dominoes))
+
+        app.assign_dominoes(dominoes2, players2)
+        self.assertEqual(6, len(players2[2].dominoes))
 
 
+class TestPlayerSubClass(unittest.TestCase):
 
+    def test_player_can_choose_move(self):
 
+        def fake_input(*args):
+            return("1 left")
 
+        app.input = fake_input
+        human = app.HumanPlayer(4)
+        human.dominoes = [(4, 5)]
 
+        b = app.deque()
+        b.append((5, 6))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+        move = human.decide_move(b)
+        move(b)
+        self.assertEqual(b[0], (4, 5))
