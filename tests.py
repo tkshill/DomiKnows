@@ -106,3 +106,49 @@ class TestPlayerSubClass(unittest.TestCase):
         move = human.decide_move(b)
         move(b)
         self.assertEqual(b[0], (4, 5))
+
+
+class TestObjectCreation(unittest.TestCase):
+
+    def test_domino_amount(self):
+        self.assertEqual(28, len(app.create_domino_set(6)))
+        self.assertEqual(6, len(app.create_domino_set(2)))
+        self.assertEqual(1, len(app.create_domino_set(0)))
+
+
+    def test_player_creation(self):
+        self.assertEqual(5, len(app.make_players(5)))
+        self.assertRaises(IndexError, app.make_players, -2)
+
+
+class TestGame(unittest.TestCase):
+
+    def test_game_returns_integer(self):
+        ds = app.create_domino_set(6)
+        ps = app.make_players(4)
+        app.assign_dominoes(ds, ps)
+        g = app.Game(app.deque(), ps)
+
+        self.assertIsInstance(g.run(), int)
+
+    def test_endings(self):
+        g = app.Game(None, None)
+        p = app.Player(1)
+
+        self.assertEqual(1 ,g._end(p, "is an idiot"))
+
+        p2 = app.Player(2)
+
+        p.add_domino((6, 6))
+        p2.add_domino((2, 3))
+
+        g.__init__(app.deque(), [p, p2])
+
+        self.assertEqual(2, g._end_via_block())
+
+
+class TestDataAnalysis(unittest.TestCase):
+    pass
+
+
+

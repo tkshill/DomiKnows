@@ -14,7 +14,6 @@ import logging
 from random import randint
 from collections import deque
 import traceback
-import time
 
 CONFIG_NAME = "default_config.cfg"
 LOGGING_FILE = "domi_knows.log"
@@ -24,14 +23,23 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(filename=LOGGING_FILE, level=logging.DEBUG)
 
 
+# def fake_print(*args):
+#     return None
+
+def string_to_bool(s):
+    return str(s).lower() in ("yes", "true", "t", "1")
+
+
 def make_config_file(config_name):
     config["DEFAULT"] = {"MAX_DOMINO": "6",
                          "HUMAN_PLAYER": "False",
                          "PLAYER_NUM": "4",
-                         "DEBUG_MODE": "True"}
+                         "DEBUG_MODE": "True",
+                         # "PRINT_SUPPRESS": "True",
+                         }
 
     with open(config_name, "w") as configfile:
-            config.write(configfile)
+        config.write(configfile)
 
 
 def flip(domino):
@@ -61,20 +69,19 @@ def assign_dominoes(dominoes, players):
     Accepts a set of dominoes and a list of players. Places a random domino
     in the set to players in sequence.
     """
-    hand_number  = int(len(dominoes)/len(players))
+    hand_number = int(len(dominoes)/len(players))
 
     for player in players:
         for count in range(hand_number):
             rand = randint(0, len(dominoes)-1)
             player.add_domino(dominoes.pop(rand))
-        # print("Player {}'s dominoes are {}".format(
-        #     player.order, player.dominoes)
-        # )
 
 
 def make_players(num):
-    return [Player(i) for i  in range(1, num + 1)]
-
+    if num >= 1:
+        return [Player(i) for i  in range(1, num + 1)]
+    else:
+        raise IndexError("Number must be greater than 0")
 
 class MyException(Exception):
     """
@@ -282,23 +289,23 @@ class Game(object):
 
         # List of each player's number and the sum of their remaining dominoes.
         final_result = [
-            (player.order, player.add_remaining_dominoes())
+            (player, player.add_remaining_dominoes())
             for player in self.player_set
             ]
 
         # sort via the sum in ascending order
         final_result.sort(key=lambda x: x[1])
+        winner = final_result[0][0]
+        points = final_result[0][1]
 
-        print("Player {} has won with {} points remaining!".format(
-            final_result[0][0], final_result[0][1])
-        )
+        return self._end(winner, "has finished with {} points remaining".format(points))
 
-    def _end_via_completion(self, player):
+    def _end(self, player, message):
         """
         Accepts player who finished their hand first and prints their success.
         """
-        print("Player {} has used all their dominoes! \n"
-              "They are the winner!".format(player.order))
+        print(" ".join(("Player {}".format(player.order), message)))
+        return player.order
 
     def run(self):
         """
@@ -325,13 +332,10 @@ class Game(object):
                     # has skipped a turn in sequence.
                     # so the board is blocked on both ends.
                     if skipped == 4:
-                        self._end_via_block()
+                        return self._end_via_block()
 
-                        # escape the for loop and halt the while loop.
-                        running = False
-                        break
                 else:
-                    time.sleep(0.5)  # for the purpose of observation
+                    # time.sleep(0.5)  # for the purpose of observation
                     skipped = 0  # reset the skipped turn counter
 
                     # apply the player's decision to the board
@@ -339,9 +343,8 @@ class Game(object):
                     print("{}: {}".format(player.order, board))
                     # if the player has no more dominoes left...
                     if player.check_for_completion():
-                        self._end_via_completion(player)
-                        running = False
-                        break
+                        return self._end(
+                            player, "has finished all their dominoes!")
 
 
 def run():
@@ -350,7 +353,10 @@ def run():
     """
     num_players = int(config["DEFAULT"]["PLAYER_NUM"])
     max_domino = int(config["DEFAULT"]["MAX_DOMINO"])
-    with_human = bool(config["DEFAULT"]["HUMAN_PLAYER"])
+    with_human = string_to_bool(config["DEFAULT"]["HUMAN_PLAYER"])
+
+    # if string_to_bool(config["DEFAULT"]["PRINT_SUPPRESS"]):
+    #     print = fake_print
 
     if with_human:
         players = make_players(num_players-1)
@@ -385,6 +391,7 @@ if __name__ == "__main__":
     # do not log system level errors
     except SystemError:
         raise
+
     except:
         # log or print errors depending on development or not
         if bool(config["DEFAULT"]['DEBUG_MODE']):
