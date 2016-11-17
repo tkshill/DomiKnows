@@ -77,11 +77,12 @@ def assign_dominoes(dominoes, players):
             player.add_domino(dominoes.pop(rand))
 
 
-def make_players(num):
-    if num >= 1:
-        return [Player(i) for i  in range(1, num + 1)]
+def make_players(num_of_players, num_of_humans=0):
+    if num_of_players > 1:
+        num_of_bots = num_of_players - num_of_humans
+        return [Player(i) for i  in range(1, num_of_bots + 1)]
     else:
-        raise IndexError("Number must be greater than 0")
+        raise IndexError("Number of players must be greater than 1")
 
 class MyException(Exception):
     """
@@ -359,7 +360,7 @@ def run():
     #     print = fake_print
 
     if with_human:
-        players = make_players(num_players-1)
+        players = make_players(num_players, 1)
         hp = HumanPlayer(4)
         players.append(hp)
     else:
