@@ -13,6 +13,10 @@ class TestPlayerMethods(unittest.TestCase):
         self.board = app.deque()
         self.player = app.Player(4)
 
+    def test_num_of_players_greater_than_one(self):
+        with self.assertRaises(IndexError):
+            app.make_players(1)
+
     def test_add_domino(self):
         p = self.player
         d = (4, 7)
