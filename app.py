@@ -213,8 +213,11 @@ class HumanPlayer(Player):
         super().__init__(order)
 
     def decide_move(self, board):
-        print("Select the number of the domino you wish to play. \n"
-              "followed by a space, and then the side you wish to place it.")
+        print(
+            "\nSelect the number of the domino you wish to play. ",
+            "followed by a space, and then either 'left' or 'right'.\n",
+            "enter 'skip' to skip your turn or 'quit' to exit game.\n"
+        )
 
         for inc, domino in enumerate(self.dominoes):
             print("{}: {}".format(inc + 1, domino))
@@ -225,6 +228,10 @@ class HumanPlayer(Player):
 
             if response == "skip":
                 raise CannotPlay
+
+            if response == "quit":
+                print("Thanks for trying out DomiKnows")
+                sys.exit(0)
 
             response = response.split(" ")
 
