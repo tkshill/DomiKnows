@@ -1,6 +1,5 @@
 __author__ = 'Kirk'
 
-import numpy as np
 import collections
 import app
 import matplotlib.pyplot as plt
@@ -26,8 +25,6 @@ if __name__ == "__main__":
     app.print = fake_print
 
     fig, ax = plt.subplots()
-
-
 
     results = collections.Counter([assemble_game().run() for _ in range(10000)])
 

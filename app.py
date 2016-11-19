@@ -14,6 +14,7 @@ import logging
 from random import randint
 from collections import deque
 import traceback
+import time
 
 CONFIG_NAME = "default_config.cfg"
 LOGGING_FILE = "domi_knows.log"
@@ -96,6 +97,12 @@ class CannotPlay(MyException):
     dominoes on the board.
     """
     pass
+
+
+class PlayerQuit(MyException):
+    """
+    Player chooses to end game
+    """
 
 
 class Player(object):
@@ -226,6 +233,7 @@ class HumanPlayer(Player):
                 side = response[1]
             except IndexError:
                 print("Invalid answer format. Please try again.")
+                continue
 
             try:
                 domino = self.dominoes[int(num) - 1]
@@ -233,6 +241,7 @@ class HumanPlayer(Player):
                 print("The domino position you've entered is invalid. \n",
                       "Please try again.")
                 continue
+
             except ValueError:
                 print("The domino position you've entered is invalid. \n",
                       "Please try again.")
@@ -335,7 +344,7 @@ class Game(object):
                         return self._end_via_block()
 
                 else:
-                    # time.sleep(0.5)  # for the purpose of observation
+                    time.sleep(0.5)  # for the purpose of observation
                     skipped = 0  # reset the skipped turn counter
 
                     # apply the player's decision to the board
