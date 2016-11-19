@@ -24,20 +24,36 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(filename=LOGGING_FILE, level=logging.DEBUG)
 
 
-# def fake_print(*args):
-#     return None
+def fake_print(*args):
+    pass
 
 def string_to_bool(s):
     return str(s).lower() in ("yes", "true", "t", "1")
 
 
 def make_config_file(config_name):
-    config["DEFAULT"] = {"MAX_DOMINO": "6",
-                         "HUMAN_PLAYER": "False",
-                         "PLAYER_NUM": "4",
-                         "DEBUG_MODE": "True",
-                         # "PRINT_SUPPRESS": "True",
-                         }
+    config["DEFAULT"] = {
+        "MAX_DOMINO": "6",
+        "HUMAN_PLAYER": "False",
+        "PLAYER_NUM": "4",
+        "DEBUG_MODE": "True",
+        "PRINT_SUPPRESS": "False",
+    }
+
+    config["RESPONSES"] = {
+        "GREETING": "",
+        "INSTRUCTIONS": "\nSelect the number of the domino you wish to play. "
+                        "followed by a space, and then either 'left' or "
+                        "'right'.\n enter 'skip' to skip your turn or 'quit' "
+                        "to exit game.\n",
+        "SKIPPED_TURN": "",
+        "QUIT_GAME": "Thanks for trying out DomiKnows!",
+        "INVALID_FORMAT": "Invalid answer format. Please try again.",
+        "INVALID_NUMBER": "The domino position you've entered is invalid. \n"
+                          "Please try again.",
+        "INVALID_LOCATION": "Invalid side. Please select either 'left' or 'right'.",
+        "INVALID_DOMINO": "The domino you chose cannot be played in that location.",
+    }
 
     with open(config_name, "w") as configfile:
         config.write(configfile)
@@ -80,7 +96,7 @@ def assign_dominoes(dominoes, players):
 
 def make_players(num):
     if num >= 1:
-        return [Player(i) for i  in range(1, num + 1)]
+        return [Player(i, config) for i  in range(1, num + 1)]
     else:
         raise IndexError("Number must be greater than 0")
 
@@ -111,9 +127,10 @@ class Player(object):
     dominoes. Players can make moves and (eventually) analyze the board
     to make the best moves.
     """
-    def __init__(self, order):
+    def __init__(self, order, config):
         self.order = order
         self.dominoes = []
+        self.config = config
 
     def add_domino(self, domino):
         """
@@ -209,15 +226,11 @@ class Player(object):
 
 class HumanPlayer(Player):
 
-    def __init__(self, order):
-        super().__init__(order)
+    def __init__(self, order, config):
+        super().__init__(order, config)
 
     def decide_move(self, board):
-        print(
-            "\nSelect the number of the domino you wish to play. ",
-            "followed by a space, and then either 'left' or 'right'.\n",
-            "enter 'skip' to skip your turn or 'quit' to exit game.\n"
-        )
+        print(self.config["RESPONSES"]["INSTRUCTIONS"])
 
         for inc, domino in enumerate(self.dominoes):
             print("{}: {}".format(inc + 1, domino))
@@ -230,7 +243,7 @@ class HumanPlayer(Player):
                 raise CannotPlay
 
             if response == "quit":
-                print("Thanks for trying out DomiKnows")
+                print(self.config["RESPONSES"]["QUIT_GAME"])
                 sys.exit(0)
 
             response = response.split(" ")
@@ -239,23 +252,21 @@ class HumanPlayer(Player):
                 num = response[0]
                 side = response[1]
             except IndexError:
-                print("Invalid answer format. Please try again.")
+                print(self.config["RESPONSES"]["INVALID_FORMAT"])
                 continue
 
             try:
                 domino = self.dominoes[int(num) - 1]
             except IndexError:
-                print("The domino position you've entered is invalid. \n",
-                      "Please try again.")
+                print(self.config["RESPONSES"]["INVALID_NUMBER"])
                 continue
 
             except ValueError:
-                print("The domino position you've entered is invalid. \n",
-                      "Please try again.")
+                print(self.config["RESPONSES"]["INVALID_NUMBER"])
                 continue
 
             if side not in ("left", "right"):
-                print("Invalid side. Please select either 'left' or 'right'.")
+                print(self.config["RESPONSES"]["INVALID_LOCATION"])
                 continue
 
             left_end = board[0][0]
@@ -270,7 +281,7 @@ class HumanPlayer(Player):
                     self.dominoes.remove(domino)
                     return self._move('appendleft', domino)
                 else:
-                    print("The domino you chose cannot be played in that location.")
+                    print(self.config["RESPONSES"]["INVALID_DOMINO"])
 
             elif side == "right":
                 if domino[0] == right_end:
@@ -281,10 +292,10 @@ class HumanPlayer(Player):
                     self.dominoes.remove(domino)
                     return self._move('append', flip(domino))
                 else:
-                    print("The domino you chose cannot be played in that location.")
+                    print(self.config["RESPONSES"]["INVALID_DOMINO"])
 
             else:
-                print("The domino you chose cannot be played in that location.")
+                print(self.config["RESPONSES"]["INVALID_DOMINO"])
 
 
 class Game(object):
@@ -371,12 +382,13 @@ def run():
     max_domino = int(config["DEFAULT"]["MAX_DOMINO"])
     with_human = string_to_bool(config["DEFAULT"]["HUMAN_PLAYER"])
 
-    # if string_to_bool(config["DEFAULT"]["PRINT_SUPPRESS"]):
-    #     print = fake_print
+    if string_to_bool(config["DEFAULT"]["PRINT_SUPPRESS"]):
+        global print
+        print = fake_print
 
     if with_human:
         players = make_players(num_players-1)
-        hp = HumanPlayer(4)
+        hp = HumanPlayer(4, config)
         players.append(hp)
     else:
         players = make_players(num_players)

@@ -3,7 +3,6 @@ __author__ = 'Kirk'
 import app
 import unittest
 
-# TODO: move all text to config file
 # TODO: make graph of wins and players...
 # TODO: make sure analysis can only work while human player is disabled
 
